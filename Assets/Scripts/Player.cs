@@ -1,16 +1,36 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 public class Player : MonoBehaviour
 {
+
+    public static Player Instance { get; private set; }
+
+    public event EventHandler<OnSelectedCounterChangedEventArgs> OnSelectedCounterChanged;
+    public class OnSelectedCounterChangedEventArgs : EventArgs
+    {
+        public ClearCouter selectedCounter;
+    }
+
     [SerializeField] private float moveSpeed = 5f; // Tốc độ di chuyển
     [SerializeField] private GameInput gameInput;
     [SerializeField] private LayerMask countersLayerMask;
 
     private bool isWalking;
     private Vector3 lastInteractDir;
+    private ClearCouter selectedCouter;
+
+    private void Awake()
+    {
+        if (Instance != null)
+        {
+            Debug.LogError("hahahaha");
+        }
+        Instance = this;
+    }
 
     private void Start()
     {
@@ -19,20 +39,9 @@ public class Player : MonoBehaviour
 
     private void GameInput_OnInteractAction(object sender, System.EventArgs e)
     {
-        Vector2 inputVector = gameInput.GetMovementVectorNormalized();
-        Vector3 movement = new Vector3(inputVector.x, 0f, inputVector.y);
-
-        if (movement != Vector3.zero)
+        if (selectedCouter != null)
         {
-            lastInteractDir = movement;
-        }
-        float interactDistance = 2f;
-        if (Physics.Raycast(transform.position, lastInteractDir, out RaycastHit raycastHit, interactDistance, countersLayerMask))
-        {
-            if (raycastHit.transform.TryGetComponent(out ClearCouter clearCouter))
-            {
-                clearCouter.Interact();
-            }
+            selectedCouter.Interact();
         }
     }
 
@@ -63,7 +72,19 @@ public class Player : MonoBehaviour
             if (raycastHit.transform.TryGetComponent(out ClearCouter clearCouter))
             {
                 //clearCouter.Interact();
+                if (clearCouter != selectedCouter)
+                {
+                    SetSelectedCounter(clearCouter);
+                }
             }
+            else
+            {
+                SetSelectedCounter(null);
+            }
+        }
+        else
+        {
+            SetSelectedCounter(null);
         }
     }
 
@@ -109,5 +130,15 @@ public class Player : MonoBehaviour
         isWalking = movement != Vector3.zero;
         float rotateSpeed = 10f;
         transform.forward = Vector3.Slerp(transform.forward, movement, Time.deltaTime * rotateSpeed);
+    }
+
+    private void SetSelectedCounter(ClearCouter selectedCounter)
+    {
+        this.selectedCouter = selectedCounter;
+
+        OnSelectedCounterChanged?.Invoke(this, new OnSelectedCounterChangedEventArgs
+        {
+            selectedCounter = selectedCouter
+        });
     }
 }
