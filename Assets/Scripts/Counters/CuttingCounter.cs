@@ -70,7 +70,7 @@ public class CuttingCounter : BaseCounter
                 KitchenObjectSO outputKitchenObject = GetOutputForInput(GetKitchenObject().GetKitchenObjectSO());
                 GetKitchenObject().DestroySelf();
 
-                KitchenObject.ApawnKitchenObject(outputKitchenObject, this);
+                KitchenObject.SpawnKitchenObject(outputKitchenObject, this);
             }
         }
     }
