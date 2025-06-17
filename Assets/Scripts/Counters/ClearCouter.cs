@@ -20,7 +20,10 @@ public class ClearCouter : BaseCounter
         {
             if (player.HasKitchenObject())
             {
-                
+                if (player.GetKitchenObject() is PlateKitchenObject)
+                {
+
+                }
             } 
             else
             {
